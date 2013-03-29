@@ -73,6 +73,8 @@ Instruction get_instruction(op opcode);
  * @param [in] operand The operand string
  * @param [out] opcode An OpCode struct to fill in
  * @return Zero on success, non-zero on an error.
+ * @note If the operand is a label, a string will be allocated and must be freed
+ * by the caller
  */
 enum TranslateError mne_to_op(const char *mnemonic, const char *operand,
                               struct OpCode *opcode);

@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-static char *output_file = "out.osv";
+static char *output_file = "out.ov";
 
 int read_opts(int argc, char **argv)
 {

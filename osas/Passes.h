@@ -29,11 +29,12 @@ struct OpList {
  * binary search tree of labels
  * @param [in] lines The AST to parse
  * @param [out] ops The generated list of opcodes
- * @param [out] labels The generated binary search tree of labels
+ * @param [out] labels The table of labels to fill in
  * @return Zero on success, non-zero on error
  * @note lines shouldn't be freed until after the second pass
  */
-int first_pass(struct Line *lines, struct OpList **ops, struct Label **labels);
+int first_pass(struct Line *lines, struct OpList **ops,
+               struct LabelTable *labels);
 
 /**
  * The second and final pass over the AST. Resolves labels to constant offsets
@@ -41,7 +42,7 @@ int first_pass(struct Line *lines, struct OpList **ops, struct Label **labels);
  * @param labels The label tree to use when resolving
  * @return Zero on success, non-zero on error
  */
-int second_pass(struct OpList *ops, struct Label *labels);
+int second_pass(struct OpList *ops, struct LabelTable *labels);
 
 /**
  * Frees a list of opcodes

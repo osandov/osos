@@ -18,10 +18,9 @@ static enum LabelRead read_label(const char *in, char **out);
 static void wrong_operand(struct Line *line, struct OpCode *op);
 
 int first_pass(struct Line *lines, struct OpList **out_ops,
-               struct Label **out_labels)
+               struct LabelTable *labels)
 {
     struct OpList *op_front = NULL, *ops;
-    struct Label *labels = NULL;
     uword address = 0x0;
     int err = 0;
 
@@ -68,16 +67,12 @@ int first_pass(struct Line *lines, struct OpList **out_ops,
                 break;
         }
         if (is_label == 1) {
-            struct Label *label =
-                (struct Label*) calloc(1, sizeof(struct Label));
-            label->name = label_name;
-            labels = add_label(labels, label);
-            if (label->address) {
+            int r = add_label(labels, label_name, address);
+            if (r) {
                 compile_error(lines->filename, lines->lineno,
                         "Label '%s' has already been defined\n", label_name);
                 err = 1;
-            } else
-                label->address = address;
+            }
         } else if (!is_label) {
             struct OpCode opcode;
             const char *mnemonic = lines->tokens->token;
@@ -123,20 +118,18 @@ int first_pass(struct Line *lines, struct OpList **out_ops,
     }
 
     *out_ops = op_front;
-    *out_labels = labels;
     return err;
 }
 
-int second_pass(struct OpList *ops, struct Label *labels)
+int second_pass(struct OpList *ops, struct LabelTable *labels)
 {
     struct OpList *op = ops;
     int err = 0;
     while (op) {
         if (op->opcode.operand.type == OPERAND_LABEL) {
             char *label_name = op->opcode.operand.label;
-            struct Label *label = get_label(labels, label_name);
+            const struct Label *label = get_label(labels, label_name);
             if (label) {
-                free(label_name);
                 op->opcode.operand.type = OPERAND_NUMBER;
                 op->opcode.operand.num = label->address;
             } else {
@@ -144,6 +137,7 @@ int second_pass(struct OpList *ops, struct Label *labels)
                         "Unrecognized label '%s'\n", label_name);
                 err = 1;
             }
+            free(label_name);
         }
         op = op->next;
     }

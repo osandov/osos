@@ -13,7 +13,7 @@ int assemble(char **input_files, int filen, char *output_file)
     struct Buffer *buffer;
     struct Line *lines;
     struct OpList *ops;
-    struct Label *labels = NULL;
+    struct LabelTable *labels;
     int r = 0;
 
     buffer = buffer_files(input_files, filen);
@@ -22,7 +22,8 @@ int assemble(char **input_files, int filen, char *output_file)
         free_buffer(buffer);
 
         if (lines) {
-            r |= first_pass(lines, &ops, &labels);
+            labels = create_label_table();
+            r |= first_pass(lines, &ops, labels);
             r |= second_pass(ops, labels);
 
             if (!r) {
@@ -36,7 +37,7 @@ int assemble(char **input_files, int filen, char *output_file)
                 }
             }
             free_oplist(ops);
-            free_labels(labels);
+            free_label_table(labels);
             free_lines(lines);
         } else
             return 1;
